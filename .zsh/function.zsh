@@ -1,3 +1,11 @@
+
+function fzf-history-search() {
+  BUFFER=$(history -n -r 1 | fzf --no-sort +m --query "$LBUFFER" --prompt="History > ")
+  CURSOR=$#BUFFER
+}
+zle -N fzf-history-search
+bindkey '^r' fzf-history-search
+
 # zplugなどでzをインストールしとく
 # zplug "rupa/z", use:z.sh
 
@@ -28,8 +36,17 @@ function fzf-git-add() {
     local selected
     selected=$(unbuffer git status -s | fzf -m --ansi --preview="echo {} | awk '{print \$2}' | xargs git diff --color" | awk '{print $2}')
     if [[ -n "$selected" ]]; then
-        selected=$(tr '\n' ' ' <<< "$selected")
-        git add $selected
+        git add `paste -s - <<< $selected`
+        echo "Completed: git add $selected"
+    fi
+}
+
+function fzf-git-reset() {
+    local selected
+    selected=$(unbuffer git status -s | fzf -m --ansi --preview="echo {} | awk '{print \$2}' | xargs git diff --color" | awk '{print $2}')
+    if [[ -n "$selected" ]]; then
+        git reset `paste -s - <<< $selected`
+        echo "Completed: git reset $selected"
     fi
 }
 
